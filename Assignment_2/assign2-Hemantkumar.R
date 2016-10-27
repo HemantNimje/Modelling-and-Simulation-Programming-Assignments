@@ -37,7 +37,63 @@ daily_power <- function(){
       cat("City #",cityDailyDemand.df$City[j],", Demand: ",cityDailyDemand.df$Demand[j],", Supply: ",PowerSupplyContribution,", Difference:",(PowerSupplyContribution-cityDailyDemand.df$Demand[j]),": BLACKOUT","\n")
     }
     else{
-      cat("City #",cityDailyDemand.df$City[j],", Demand: ",cityDailyDemand.df$Demand[j],", Supply: ",PowerSupplyContribution,", Difference:",(PowerSupplyContribution-cityDailyDemand.df$Demand[j]),": No Blackout","\n")
+      cat("City #",cityDailyDemand.df$City[j],", Demand: ",cityDailyDemand.df$Demand[j],", Supply: ",PowerSupplyContribution,", Difference:",(PowerSupplyContribution-cityDailyDemand.df$Demand[j]),"\n")
     }
   }
 }
+
+
+#EXERCISE 2
+
+
+failure <- function(){
+  blackout <- 0
+  MWperStation <- c()
+  for(i in 1:nrow(A)){
+    MWperGen <- acme.df$MegawattsPerGenerator[i]
+    p <- acme.df$NonOperationProbability[i]
+    x<- sample(0:1,acme.df$Generators[i],replace=TRUE,prob = c(p,1-p))
+    y <- sum(x)            
+    MWperStation <- c(MWperStation,y * MWperGen)
+  }
+  
+  for(j in 1:ncol(A)){
+    PowerSupplyContribution <- 0 
+    PowerSupply <- 0
+    for(i in 1:nrow(A)){
+      StationPercentage <- A[i,j]
+      PowerSupply <- (StationPercentage * MWperStation[i] * 0.01)
+      PowerSupplyContribution <- PowerSupplyContribution + PowerSupply
+    }
+    if(PowerSupplyContribution < cityDailyDemand.df$Demand[j]){
+      #cat("City #",cityDailyDemand.df$City[j],", Demand: ",cityDailyDemand.df$Demand[j],", Supply: ",PowerSupplyContribution,", Difference:",(PowerSupplyContribution-cityDailyDemand.df$Demand[j]),": BLACKOUT","\n")
+      blackout <- 1
+    }
+    else{
+      #cat("City #",cityDailyDemand.df$City[j],", Demand: ",cityDailyDemand.df$Demand[j],", Supply: ",PowerSupplyContribution,", Difference:",(PowerSupplyContribution-cityDailyDemand.df$Demand[j]),"\n")
+      
+    }
+  }
+  return(blackout)
+}
+
+
+imc <- function(n,delta,failure){
+  sum <- 0
+  sumsq <- 0
+  for(i in 1:n){
+    x <- failure()
+    sum <- sum + x
+    sumsq <- sumsq + x*x
+  }  
+  lambda <- sum / n
+  sigmasq <- (sumsq - (lambda * lambda * n) )/ (n - 1)
+  se <- sqrt(sigmasq / n)
+  
+  cat("# Failures: ",sum,"n: ",n," Probability of failure day: ",lambda)
+  cat("Lambda: ",lambda)
+  cat("Sample Variance: ",sigmasq,"\n")
+  cat("Standard Error: ",se)
+  
+}
+
