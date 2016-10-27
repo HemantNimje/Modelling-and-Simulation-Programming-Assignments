@@ -97,3 +97,44 @@ imc <- function(n,delta,failure){
   
 }
 
+
+
+#EXERCISE 3
+
+failure2 <- function(s,Prob){
+  blackout <- 0
+  MWperStation <- c()
+  for(i in 1:nrow(A)){
+    MWperGen <- acme.df$MegawattsPerGenerator[i]
+    if(i == s){
+      p <- Prob
+    }
+    else{
+      p <- acme.df$NonOperationProbability[i]
+    }
+    x<- sample(0:1,acme.df$Generators[i],replace=TRUE,prob = c(p,1-p))
+    y <- sum(x)            
+    MWperStation <- c(MWperStation,y * MWperGen)
+  }
+  
+  for(j in 1:ncol(A)){
+    PowerSupplyContribution <- 0 
+    PowerSupply <- 0
+    for(i in 1:nrow(A)){
+      StationPercentage <- A[i,j]
+      PowerSupply <- (StationPercentage * MWperStation[i] * 0.01)
+      PowerSupplyContribution <- PowerSupplyContribution + PowerSupply
+    }
+    if(PowerSupplyContribution < cityDailyDemand.df$Demand[j]){
+      #cat("City #",cityDailyDemand.df$City[j],", Demand: ",cityDailyDemand.df$Demand[j],", Supply: ",PowerSupplyContribution,", Difference:",(PowerSupplyContribution-cityDailyDemand.df$Demand[j]),": BLACKOUT","\n")
+      blackout <- 1
+    }
+    else{
+      #cat("City #",cityDailyDemand.df$City[j],", Demand: ",cityDailyDemand.df$Demand[j],", Supply: ",PowerSupplyContribution,", Difference:",(PowerSupplyContribution-cityDailyDemand.df$Demand[j]),"\n")
+      
+    }
+  }
+  return(blackout)
+}
+
+
